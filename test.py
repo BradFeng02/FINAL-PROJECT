@@ -2,11 +2,16 @@
 tests trained svm model
 """
 
-from typing import NewType
 from joblib import load
+from math import floor
 import numpy as np
-from constants import CLF_PATH, N_TRAIN, N_TEST, DATA_PATH, neg_data, pos_data
+from constants import CLF_PATH, N_TRAIN, N_TEST, DATA_PATH, neg_data, pos_data, PROG_BAR_SIZE, TEST_PAD
 from features import N_FEAT, find_feat
+
+prog = [' '] * (PROG_BAR_SIZE + 2)
+prog[0] = '['
+prog[-1] = ']'
+print('Progress:', ''.join(prog), end='\r')
 
 clf = load(CLF_PATH)
 
@@ -25,7 +30,15 @@ for i in range(N_TEST):
     pos = pos_file.read()
     find_feat(pos, tests, i + N_TEST)
     pos_file.close()
+
+    p = floor(i/N_TEST * PROG_BAR_SIZE)
+    if p > 0:
+        prog[p] = '='
+    print('Progress:', ''.join(prog), '{0}/{1}'.format((i+1) * 2, N_TEST * 2).rjust(TEST_PAD), end='\r')
 # endfor
+
+prog[-2] = '='
+print('Progress:', ''.join(prog))
 
 feat_range = np.zeros((N_FEAT, 2))  # (min, max) for standardizing
 for i in range(2 * N_TEST):
@@ -37,8 +50,11 @@ for i in range(2 * N_TEST):
 
 for i in range(2 * N_TEST):  # standardize to [-1 , 1]
     for j in range(N_FEAT):
-        tests[i, j] = (tests[i, j] - feat_range[j, 0]) / \
-            (feat_range[j, 1] - feat_range[j, 0]) * 2 - 1
+        if feat_range[j, 1] == feat_range[j, 0]:
+            tests[i, j] = 0
+        else:
+            tests[i, j] = (tests[i, j] - feat_range[j, 0]) / \
+                (feat_range[j, 1] - feat_range[j, 0]) * 2 - 1
 
 predicts = clf.predict(tests)
 
@@ -51,6 +67,7 @@ for i in range(N_TEST):
         correct += 1
         pos_correct += 1
 
+print('')
 print('neg:', neg_correct / N_TEST, '({}/{})'.format(neg_correct, N_TEST))
 print('pos:', pos_correct / N_TEST, '({}/{})'.format(pos_correct, N_TEST))
 print('all:', correct / (2 * N_TEST))

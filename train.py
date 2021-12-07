@@ -4,11 +4,17 @@ using polarity dataset v2.0 at https://www.cs.cornell.edu/people/pabo/movie-revi
 """
 
 from joblib import dump
+from math import floor
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn import svm
-from constants import CLF_PATH, N_TRAIN, DATA_PATH, neg_data, pos_data
+from constants import CLF_PATH, N_TRAIN, DATA_PATH, PROG_BAR_SIZE, neg_data, pos_data, PROG_BAR_SIZE, TRAIN_PAD
 from features import N_FEAT, find_feat
+
+prog = [' '] * (PROG_BAR_SIZE + 2)
+prog[0] = '['
+prog[-1] = ']'
+print('Progress:', ''.join(prog), end='\r')
 
 clf = svm.SVC()
 
@@ -27,7 +33,15 @@ for i in range(N_TRAIN):
     pos = pos_file.read()
     find_feat(pos, samples, i + N_TRAIN)
     pos_file.close()
+
+    p = floor(i/N_TRAIN * PROG_BAR_SIZE)
+    if p > 0:
+        prog[p] = '='
+    print('Progress:', ''.join(prog), '{0}/{1}'.format((i+1) * 2, N_TRAIN * 2).rjust(TRAIN_PAD), end='\r')
 # endfor
+
+prog[-2] = '='
+print('Progress:', ''.join(prog))
 
 # for i in range(2 * N_TRAIN):
 #     print(labels[i], samples[i])
@@ -42,8 +56,11 @@ for i in range(2 * N_TRAIN):
 
 for i in range(2 * N_TRAIN):  # standardize to [-1 , 1]
     for j in range(N_FEAT):
-        samples[i, j] = (samples[i, j] - feat_range[j, 0]) / \
-            (feat_range[j, 1] - feat_range[j, 0]) * 2 - 1
+        if feat_range[j, 1] == feat_range[j, 0]:
+            samples[i, j] = 0
+        else:
+            samples[i, j] = (samples[i, j] - feat_range[j, 0]) / \
+                (feat_range[j, 1] - feat_range[j, 0]) * 2 - 1
 
 # for i in range(2 * N_TRAIN):
 #     print(labels[i], samples[i])
