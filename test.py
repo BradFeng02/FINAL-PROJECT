@@ -6,7 +6,7 @@ from joblib import load
 from math import floor
 import numpy as np
 from constants import CLF_PATH, N_TRAIN, N_TEST, DATA_PATH, neg_data, pos_data, PROG_BAR_SIZE, TEST_PAD
-from features import N_FEAT, find_feat
+from features import N_FEAT, find_feats
 
 prog = [' '] * (PROG_BAR_SIZE + 2)
 prog[0] = '['
@@ -23,12 +23,12 @@ labels[N_TEST:] = 1  # neg, ..., pos, ...
 for i in range(N_TEST):
     neg_file = open(DATA_PATH + 'neg/' + neg_data[i + N_TRAIN], 'r')
     neg = neg_file.read()
-    find_feat(neg, tests, i)
+    find_feats(neg, tests, i)
     neg_file.close()
 
     pos_file = open(DATA_PATH + 'pos/' + pos_data[i + N_TRAIN], 'r')
     pos = pos_file.read()
-    find_feat(pos, tests, i + N_TEST)
+    find_feats(pos, tests, i + N_TEST)
     pos_file.close()
 
     p = floor(i/N_TEST * PROG_BAR_SIZE)

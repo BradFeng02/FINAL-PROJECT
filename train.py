@@ -9,7 +9,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from sklearn import svm
 from constants import CLF_PATH, N_TRAIN, DATA_PATH, PROG_BAR_SIZE, neg_data, pos_data, PROG_BAR_SIZE, TRAIN_PAD
-from features import N_FEAT, find_feat
+from features import N_FEAT, find_feats
 
 prog = [' '] * (PROG_BAR_SIZE + 2)
 prog[0] = '['
@@ -26,12 +26,12 @@ labels[N_TRAIN:] = 1  # neg, ..., pos, ...
 for i in range(N_TRAIN):
     neg_file = open(DATA_PATH + 'neg/' + neg_data[i], 'r')
     neg = neg_file.read()
-    find_feat(neg, samples, i)
+    find_feats(neg, samples, i)
     neg_file.close()
 
     pos_file = open(DATA_PATH + 'pos/' + pos_data[i], 'r')
     pos = pos_file.read()
-    find_feat(pos, samples, i + N_TRAIN)
+    find_feats(pos, samples, i + N_TRAIN)
     pos_file.close()
 
     p = floor(i/N_TRAIN * PROG_BAR_SIZE)
